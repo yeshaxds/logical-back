@@ -1,7 +1,7 @@
 package com.example.logicalback.controller;
 
 import com.example.logicalback.dto.TaskDTO;
-import com.example.logicalback.model.Task;
+import com.example.logicalback.entity.TaskStatus;
 import com.example.logicalback.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +33,13 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id) {
         log.info("REST请求 - 获取任务 ID: {}", id);
-        return ResponseEntity.ok(taskService.getTaskById(id));
+        return ResponseEntity.ok(taskService.findTaskById(id));
     }
 
     @GetMapping
     public ResponseEntity<List<TaskDTO>> getAllTasks() {
         log.info("REST请求 - 获取所有任务");
-        return ResponseEntity.ok(taskService.getAllTasks());
+        return ResponseEntity.ok(taskService.findAllTasks());
     }
 
     @GetMapping("/paginated")
@@ -51,7 +51,7 @@ public class TaskController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TaskDTO>> getTasksByUserId(@PathVariable Long userId) {
         log.info("REST请求 - 获取用户 ID: {} 的所有任务", userId);
-        return ResponseEntity.ok(taskService.getTasksByUserId(userId));
+        return ResponseEntity.ok(taskService.findTasksByUserId(userId));
     }
 
     @GetMapping("/user/{userId}/paginated")
@@ -64,13 +64,13 @@ public class TaskController {
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<TaskDTO>> getTasksByCategoryId(@PathVariable Long categoryId) {
         log.info("REST请求 - 获取分类 ID: {} 的所有任务", categoryId);
-        return ResponseEntity.ok(taskService.getTasksByCategoryId(categoryId));
+        return ResponseEntity.ok(taskService.findTasksByCategoryId(categoryId));
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<TaskDTO>> getTasksByStatus(@PathVariable Task.TaskStatus status) {
+    public ResponseEntity<List<TaskDTO>> getTasksByStatus(@PathVariable String status) {
         log.info("REST请求 - 获取状态为 {} 的所有任务", status);
-        return ResponseEntity.ok(taskService.getTasksByStatus(status));
+        return ResponseEntity.ok(taskService.findTasksByStatus(status));
     }
 
     @GetMapping("/due-between")
@@ -104,7 +104,7 @@ public class TaskController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<TaskDTO> updateTaskStatus(
             @PathVariable Long id,
-            @RequestParam Task.TaskStatus status) {
+            @RequestParam TaskStatus status) {
         log.info("REST请求 - 更新任务 ID: {} 的状态为 {}", id, status);
         return ResponseEntity.ok(taskService.updateTaskStatus(id, status));
     }
@@ -119,7 +119,7 @@ public class TaskController {
     @GetMapping("/count/user/{userId}/status/{status}")
     public ResponseEntity<Long> countTasksByUserAndStatus(
             @PathVariable Long userId,
-            @PathVariable Task.TaskStatus status) {
+            @PathVariable TaskStatus status) {
         log.info("REST请求 - 统计用户 ID: {} 状态为 {} 的任务数量", userId, status);
         return ResponseEntity.ok(taskService.countTasksByUserAndStatus(userId, status));
     }

@@ -28,4 +28,10 @@ public interface UserService {
     boolean existsByUsername(String username);
     
     boolean existsByEmail(String email);
+
+    List<UserDTO> findAllUsers();
+    
+    UserDTO findUserById(Long id);
+    
+    List<UserDTO> findActiveUsers();
 } 

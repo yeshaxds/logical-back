@@ -1,6 +1,6 @@
 package com.example.logicalback.dto;
 
-import com.example.logicalback.model.Task;
+import com.example.logicalback.entity.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,38 +25,37 @@ public class TaskDTO {
     private String description;
     
     @NotNull(message = "任务状态不能为空")
-    private Task.TaskStatus status;
+    private TaskStatus status;
     
-    private Long userId;
-    private String username;
+    private Integer priority;
+    private LocalDateTime dueDate;
     
     private Long categoryId;
     private String categoryName;
     
-    private Integer priority;
-    private LocalDateTime dueDate;
-    private LocalDateTime completedAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Long userId;
+    private String username;
     
     private List<TagDTO> tags;
     
-    public static TaskDTO fromEntity(Task task) {
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    
+    public static TaskDTO fromEntity(com.example.logicalback.model.Task task) {
         return TaskDTO.builder()
                 .id(task.getId())
                 .title(task.getTitle())
                 .description(task.getDescription())
                 .status(task.getStatus())
-                .userId(task.getUser() != null ? task.getUser().getId() : null)
-                .username(task.getUser() != null ? task.getUser().getUsername() : null)
-                .categoryId(task.getCategory() != null ? task.getCategory().getId() : null)
-                .categoryName(task.getCategory() != null ? task.getCategory().getName() : null)
                 .priority(task.getPriority())
                 .dueDate(task.getDueDate())
-                .completedAt(task.getCompletedAt())
+                .categoryId(task.getCategory() != null ? task.getCategory().getId() : null)
+                .categoryName(task.getCategory() != null ? task.getCategory().getName() : null)
+                .userId(task.getUser() != null ? task.getUser().getId() : null)
+                .username(task.getUser() != null ? task.getUser().getUsername() : null)
+                .tags(task.getTags().stream().map(TagDTO::fromEntity).collect(Collectors.toList()))
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
-                .tags(task.getTags().stream().map(TagDTO::fromEntity).collect(Collectors.toList()))
                 .build();
     }
 } 

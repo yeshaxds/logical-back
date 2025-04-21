@@ -19,14 +19,14 @@ public class TagDTO {
     private String name;
     
     private String color;
-    private Long taskCount;
+    private Integer taskCount;
     
     public static TagDTO fromEntity(Tag tag) {
         return TagDTO.builder()
                 .id(tag.getId())
                 .name(tag.getName())
                 .color(tag.getColor())
-                .taskCount((long) tag.getTasks().size())
+                .taskCount(tag.getTasks().size())
                 .build();
     }
 } 

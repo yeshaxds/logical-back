@@ -2,7 +2,7 @@ package com.example.logicalback.service;
 
 import com.example.logicalback.dto.CategoryDTO;
 import com.example.logicalback.dto.TagDTO;
-import com.example.logicalback.model.Task;
+import com.example.logicalback.entity.TaskStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,9 +10,9 @@ import java.util.Map;
 
 public interface StatisticsService {
     
-    Map<Task.TaskStatus, Long> getTaskStatusDistribution();
+    Map<String, Long> getTaskStatusDistribution();
     
-    Map<Task.TaskStatus, Long> getUserTaskStatusDistribution(Long userId);
+    Map<TaskStatus, Long> getUserTaskStatusDistribution(Long userId);
     
     List<CategoryDTO> getCategoriesWithMostTasks();
     

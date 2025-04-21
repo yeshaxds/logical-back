@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -20,7 +21,11 @@ public class CategoryDTO {
     
     private String description;
     private String color;
-    private Long taskCount;
+    private Integer taskCount;
+    
+    private LocalDateTime createdAt;
+    
+    private LocalDateTime updatedAt;
     
     public static CategoryDTO fromEntity(Category category) {
         return CategoryDTO.builder()
@@ -28,7 +33,9 @@ public class CategoryDTO {
                 .name(category.getName())
                 .description(category.getDescription())
                 .color(category.getColor())
-                .taskCount((long) category.getTasks().size())
+                .taskCount(category.getTasks().size())
+                .createdAt(category.getCreatedAt())
+                .updatedAt(category.getUpdatedAt())
                 .build();
     }
 } 

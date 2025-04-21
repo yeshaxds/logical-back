@@ -1,6 +1,6 @@
 package com.example.logicalback.repository;
 
-import com.example.logicalback.model.User;
+import com.example.logicalback.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -22,9 +22,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.active = true")
     List<User> findAllActiveUsers();
     
-    @Query("SELECT u FROM User u WHERE u.role = :role")
-    List<User> findAllByRole(User.UserRole role);
-    
-    @Query("SELECT COUNT(t) FROM User u JOIN u.tasks t WHERE u.id = :userId")
-    Long countUserTasks(Long userId);
+    @Query("SELECT u, COUNT(t) AS taskCount FROM User u LEFT JOIN u.tasks t GROUP BY u.id")
+    List<Object[]> findAllUsersWithTaskCount();
 } 

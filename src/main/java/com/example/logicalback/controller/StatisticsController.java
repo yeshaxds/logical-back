@@ -23,7 +23,7 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
 
     @GetMapping("/task-status")
-    public ResponseEntity<Map<Task.TaskStatus, Long>> getTaskStatusDistribution() {
+    public ResponseEntity<Map<String, Long>> getTaskStatusDistribution() {
         log.info("REST请求 - 获取所有任务状态分布");
         return ResponseEntity.ok(statisticsService.getTaskStatusDistribution());
     }

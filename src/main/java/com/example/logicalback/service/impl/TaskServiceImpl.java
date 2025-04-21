@@ -1,13 +1,14 @@
 package com.example.logicalback.service.impl;
 
+import com.example.logicalback.dto.TagDTO;
 import com.example.logicalback.dto.TaskDTO;
+import com.example.logicalback.entity.Task;
+import com.example.logicalback.entity.TaskStatus;
 import com.example.logicalback.exception.ResourceNotFoundException;
 import com.example.logicalback.model.Category;
 import com.example.logicalback.model.Tag;
-import com.example.logicalback.model.Task;
 import com.example.logicalback.model.User;
 import com.example.logicalback.repository.CategoryRepository;
-import com.example.logicalback.repository.TagRepository;
 import com.example.logicalback.repository.TaskRepository;
 import com.example.logicalback.repository.UserRepository;
 import com.example.logicalback.service.TaskService;
@@ -30,7 +31,6 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
-    private final TagRepository tagRepository;
 
     @Override
     @Transactional
@@ -167,7 +167,7 @@ public class TaskServiceImpl implements TaskService {
     @Transactional(readOnly = true)
     public List<TaskDTO> getTasksByTagId(Long tagId) {
         log.debug("获取标签 ID: {} 的所有任务", tagId);
-        if (!tagRepository.existsById(tagId)) {
+        if (!userRepository.existsById(tagId)) {
             throw new ResourceNotFoundException("标签不存在, ID: " + tagId);
         }
         
@@ -259,7 +259,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("任务不存在, ID: " + taskId));
                 
-        Tag tag = tagRepository.findById(tagId)
+        Tag tag = userRepository.findById(tagId)
                 .orElseThrow(() -> new ResourceNotFoundException("标签不存在, ID: " + tagId));
                 
         task.getTags().add(tag);
@@ -274,11 +274,93 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("任务不存在, ID: " + taskId));
                 
-        Tag tag = tagRepository.findById(tagId)
+        Tag tag = userRepository.findById(tagId)
                 .orElseThrow(() -> new ResourceNotFoundException("标签不存在, ID: " + tagId));
                 
         task.getTags().remove(tag);
         taskRepository.save(task);
         log.info("标签移除成功");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskDTO> findAllTasks() {
+        return taskRepository.findAll().stream()
+                .map(this::convertToTaskDTO)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public TaskDTO findTaskById(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+        
+        return convertToTaskDTO(task);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskDTO> findTasksByUserId(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found with id: " + userId);
+        }
+        
+        return taskRepository.findByUserId(userId).stream()
+                .map(this::convertToTaskDTO)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskDTO> findTasksByCategoryId(Long categoryId) {
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new ResourceNotFoundException("Category not found with id: " + categoryId);
+        }
+        
+        return taskRepository.findByCategoryId(categoryId).stream()
+                .map(this::convertToTaskDTO)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskDTO> findTasksByStatus(String status) {
+        TaskStatus taskStatus;
+        try {
+            taskStatus = TaskStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid task status: " + status);
+        }
+        
+        return taskRepository.findByStatus(taskStatus).stream()
+                .map(this::convertToTaskDTO)
+                .collect(Collectors.toList());
+    }
+    
+    private TaskDTO convertToTaskDTO(Task task) {
+        List<TagDTO> tagDTOs = task.getTags().stream()
+                .map(tag -> TagDTO.builder()
+                        .id(tag.getId())
+                        .name(tag.getName())
+                        .color(tag.getColor())
+                        .build())
+                .collect(Collectors.toList());
+        
+        return TaskDTO.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .status(task.getStatus())
+                .priority(task.getPriority())
+                .dueDate(task.getDueDate())
+                .categoryId(task.getCategory() != null ? task.getCategory().getId() : null)
+                .categoryName(task.getCategory() != null ? task.getCategory().getName() : null)
+                .userId(task.getUser() != null ? task.getUser().getId() : null)
+                .username(task.getUser() != null ? task.getUser().getUsername() : null)
+                .tags(tagDTOs)
+                .createdAt(task.getCreatedAt())
+                .updatedAt(task.getUpdatedAt())
+                .build();
     }
 } 

@@ -1,6 +1,6 @@
 package com.example.logicalback.dto;
 
-import com.example.logicalback.model.User;
+import com.example.logicalback.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,12 +27,13 @@ public class UserDTO {
     private String email;
     
     private String fullName;
-    private User.UserRole role;
+    private Role role;
     private boolean active;
+    private Integer taskCount;
     private LocalDateTime createdAt;
-    private Long taskCount;
+    private LocalDateTime updatedAt;
     
-    public static UserDTO fromEntity(User user) {
+    public static UserDTO fromEntity(com.example.logicalback.model.User user) {
         return UserDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -40,8 +41,9 @@ public class UserDTO {
                 .fullName(user.getFullName())
                 .role(user.getRole())
                 .active(user.isActive())
-                .createdAt(user.getCreatedAt())
                 .taskCount((long) user.getTasks().size())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 } 

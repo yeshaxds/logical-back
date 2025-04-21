@@ -1,8 +1,8 @@
 package com.example.logicalback.service.impl;
 
 import com.example.logicalback.dto.UserDTO;
+import com.example.logicalback.entity.User;
 import com.example.logicalback.exception.ResourceNotFoundException;
-import com.example.logicalback.model.User;
 import com.example.logicalback.repository.UserRepository;
 import com.example.logicalback.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -159,5 +160,70 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> findAllUsers() {
+        List<Object[]> usersWithTaskCount = userRepository.findAllUsersWithTaskCount();
+        List<UserDTO> userDTOs = new ArrayList<>();
+        
+        for (Object[] result : usersWithTaskCount) {
+            User user = (User) result[0];
+            Long taskCount = (Long) result[1];
+            
+            UserDTO userDTO = UserDTO.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .role(user.getRole())
+                    .active(user.isActive())
+                    .taskCount(taskCount.intValue())
+                    .createdAt(user.getCreatedAt())
+                    .updatedAt(user.getUpdatedAt())
+                    .build();
+            
+            userDTOs.add(userDTO);
+        }
+        
+        return userDTOs;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public UserDTO findUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        
+        return UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole())
+                .active(user.isActive())
+                .taskCount(user.getTasks().size())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> findActiveUsers() {
+        return userRepository.findAllActiveUsers().stream()
+                .map(user -> UserDTO.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .fullName(user.getFullName())
+                        .role(user.getRole())
+                        .active(user.isActive())
+                        .taskCount(user.getTasks().size())
+                        .createdAt(user.getCreatedAt())
+                        .updatedAt(user.getUpdatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 } 

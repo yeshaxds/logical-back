@@ -29,7 +29,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         log.info("REST请求 - 获取用户ID: {}", id);
-        return ResponseEntity.ok(userService.getUserById(id));
+        return ResponseEntity.ok(userService.findUserById(id));
     }
 
     @GetMapping("/username/{username}")
@@ -41,13 +41,13 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         log.info("REST请求 - 获取所有用户");
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(userService.findAllUsers());
     }
 
     @GetMapping("/active")
     public ResponseEntity<List<UserDTO>> getActiveUsers() {
         log.info("REST请求 - 获取所有活跃用户");
-        return ResponseEntity.ok(userService.getActiveUsers());
+        return ResponseEntity.ok(userService.findActiveUsers());
     }
 
     @GetMapping("/role/{role}")

@@ -1,7 +1,7 @@
 package com.example.logicalback.service;
 
 import com.example.logicalback.dto.TaskDTO;
-import com.example.logicalback.model.Task;
+import com.example.logicalback.entity.TaskStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,7 +24,7 @@ public interface TaskService {
     
     List<TaskDTO> getTasksByCategoryId(Long categoryId);
     
-    List<TaskDTO> getTasksByStatus(Task.TaskStatus status);
+    List<TaskDTO> getTasksByStatus(TaskStatus status);
     
     List<TaskDTO> getTasksDueBetween(LocalDateTime start, LocalDateTime end);
     
@@ -34,13 +34,23 @@ public interface TaskService {
     
     TaskDTO updateTask(Long id, TaskDTO taskDTO);
     
-    TaskDTO updateTaskStatus(Long id, Task.TaskStatus status);
+    TaskDTO updateTaskStatus(Long id, TaskStatus status);
     
     void deleteTask(Long id);
     
-    Long countTasksByUserAndStatus(Long userId, Task.TaskStatus status);
+    Long countTasksByUserAndStatus(Long userId, TaskStatus status);
     
     void addTagToTask(Long taskId, Long tagId);
     
     void removeTagFromTask(Long taskId, Long tagId);
+
+    List<TaskDTO> findAllTasks();
+    
+    TaskDTO findTaskById(Long id);
+    
+    List<TaskDTO> findTasksByUserId(Long userId);
+    
+    List<TaskDTO> findTasksByCategoryId(Long categoryId);
+    
+    List<TaskDTO> findTasksByStatus(String status);
 } 

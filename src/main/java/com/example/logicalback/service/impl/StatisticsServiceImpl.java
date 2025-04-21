@@ -2,6 +2,9 @@ package com.example.logicalback.service.impl;
 
 import com.example.logicalback.dto.CategoryDTO;
 import com.example.logicalback.dto.TagDTO;
+import com.example.logicalback.entity.Category;
+import com.example.logicalback.entity.Tag;
+import com.example.logicalback.entity.TaskStatus;
 import com.example.logicalback.exception.ResourceNotFoundException;
 import com.example.logicalback.model.Task;
 import com.example.logicalback.repository.CategoryRepository;
@@ -31,17 +34,20 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Task.TaskStatus, Long> getTaskStatusDistribution() {
-        log.debug("获取所有任务状态分布");
+    public Map<String, Long> getTaskStatusDistribution() {
+        List<Map<String, Object>> result = taskRepository.getTaskStatusDistribution();
+        Map<String, Long> distribution = new HashMap<>();
         
-        Map<Task.TaskStatus, Long> distribution = new HashMap<>();
-        for (Task.TaskStatus status : Task.TaskStatus.values()) {
-            distribution.put(status, 0L);
+        // 确保所有状态都有值
+        for (TaskStatus status : TaskStatus.values()) {
+            distribution.put(status.name(), 0L);
         }
         
-        List<Task> tasks = taskRepository.findAll();
-        for (Task task : tasks) {
-            distribution.put(task.getStatus(), distribution.get(task.getStatus()) + 1);
+        // 添加数据库返回的值
+        for (Map<String, Object> item : result) {
+            TaskStatus status = (TaskStatus) item.get("status");
+            Long count = ((Number) item.get("count")).longValue();
+            distribution.put(status.name(), count);
         }
         
         return distribution;
@@ -72,18 +78,16 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     @Transactional(readOnly = true)
     public List<CategoryDTO> getCategoriesWithMostTasks() {
-        log.debug("获取任务数量最多的分类");
-        return categoryRepository.findCategoriesWithMostTasks().stream()
-                .map(CategoryDTO::fromEntity)
+        return categoryRepository.findCategoriesWithTaskCount().stream()
+                .map(this::convertToCategoryDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TagDTO> getMostUsedTags() {
-        log.debug("获取使用最多的标签");
         return tagRepository.findMostUsedTags().stream()
-                .map(TagDTO::fromEntity)
+                .map(this::convertToTagDTO)
                 .collect(Collectors.toList());
     }
 
@@ -212,5 +216,32 @@ public class StatisticsServiceImpl implements StatisticsService {
         }
         
         return distribution;
+    }
+
+    private CategoryDTO convertToCategoryDTO(Object[] result) {
+        Category category = (Category) result[0];
+        Long taskCount = (Long) result[1];
+        
+        return CategoryDTO.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .color(category.getColor())
+                .taskCount(taskCount.intValue())
+                .createdAt(category.getCreatedAt())
+                .updatedAt(category.getUpdatedAt())
+                .build();
+    }
+    
+    private TagDTO convertToTagDTO(Object[] result) {
+        Tag tag = (Tag) result[0];
+        Long taskCount = (Long) result[1];
+        
+        return TagDTO.builder()
+                .id(tag.getId())
+                .name(tag.getName())
+                .color(tag.getColor())
+                .taskCount(taskCount.intValue())
+                .build();
     }
 } 
