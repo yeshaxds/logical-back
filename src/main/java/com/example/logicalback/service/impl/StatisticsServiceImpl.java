@@ -4,9 +4,9 @@ import com.example.logicalback.dto.CategoryDTO;
 import com.example.logicalback.dto.TagDTO;
 import com.example.logicalback.entity.Category;
 import com.example.logicalback.entity.Tag;
+import com.example.logicalback.entity.Task;
 import com.example.logicalback.entity.TaskStatus;
 import com.example.logicalback.exception.ResourceNotFoundException;
-import com.example.logicalback.model.Task;
 import com.example.logicalback.repository.CategoryRepository;
 import com.example.logicalback.repository.TagRepository;
 import com.example.logicalback.repository.TaskRepository;
@@ -55,15 +55,15 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Task.TaskStatus, Long> getUserTaskStatusDistribution(Long userId) {
+    public Map<TaskStatus, Long> getUserTaskStatusDistribution(Long userId) {
         log.debug("获取用户 ID: {} 的任务状态分布", userId);
         
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("用户不存在, ID: " + userId);
         }
         
-        Map<Task.TaskStatus, Long> distribution = new HashMap<>();
-        for (Task.TaskStatus status : Task.TaskStatus.values()) {
+        Map<TaskStatus, Long> distribution = new HashMap<>();
+        for (TaskStatus status : TaskStatus.values()) {
             distribution.put(status, 0L);
         }
         
@@ -104,16 +104,15 @@ public class StatisticsServiceImpl implements StatisticsService {
             tasksPerDay.put(date.format(formatter), 0L);
         }
         
-        // 查询在指定日期范围内完成的任务
-        List<Task> completedTasks = taskRepository.findAll().stream()
-                .filter(task -> task.getStatus() == Task.TaskStatus.COMPLETED)
-                .filter(task -> task.getCompletedAt() != null)
-                .filter(task -> !task.getCompletedAt().isBefore(startDate) && !task.getCompletedAt().isAfter(endDate))
+        // 查询在指定日期范围内状态为COMPLETED的任务
+        List<Task> completedTasks = taskRepository.findByStatus(TaskStatus.COMPLETED).stream()
+                .filter(task -> task.getUpdatedAt() != null)
+                .filter(task -> !task.getUpdatedAt().isBefore(startDate) && !task.getUpdatedAt().isAfter(endDate))
                 .collect(Collectors.toList());
         
         // 统计每天完成的任务数量
         for (Task task : completedTasks) {
-            String dayKey = task.getCompletedAt().format(formatter);
+            String dayKey = task.getUpdatedAt().format(formatter);
             tasksPerDay.put(dayKey, tasksPerDay.getOrDefault(dayKey, 0L) + 1);
         }
         
@@ -137,7 +136,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         
         long totalTasks = userTasks.size();
         long completedTasks = userTasks.stream()
-                .filter(task -> task.getStatus() == Task.TaskStatus.COMPLETED)
+                .filter(task -> task.getStatus() == TaskStatus.COMPLETED)
                 .count();
         
         double completionRate = (double) completedTasks / totalTasks * 100;
@@ -158,8 +157,8 @@ public class StatisticsServiceImpl implements StatisticsService {
         LocalDateTime now = LocalDateTime.now();
         
         return taskRepository.findAll().stream()
-                .filter(task -> task.getStatus() != Task.TaskStatus.COMPLETED 
-                        && task.getStatus() != Task.TaskStatus.CANCELLED)
+                .filter(task -> task.getStatus() != TaskStatus.COMPLETED 
+                        && task.getStatus() != TaskStatus.CANCELLED)
                 .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(now))
                 .count();
     }
@@ -176,8 +175,8 @@ public class StatisticsServiceImpl implements StatisticsService {
         LocalDateTime now = LocalDateTime.now();
         
         return taskRepository.findByUserId(userId).stream()
-                .filter(task -> task.getStatus() != Task.TaskStatus.COMPLETED 
-                        && task.getStatus() != Task.TaskStatus.CANCELLED)
+                .filter(task -> task.getStatus() != TaskStatus.COMPLETED 
+                        && task.getStatus() != TaskStatus.CANCELLED)
                 .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(now))
                 .count();
     }

@@ -2,13 +2,14 @@ package com.example.logicalback.service.impl;
 
 import com.example.logicalback.dto.TagDTO;
 import com.example.logicalback.dto.TaskDTO;
+import com.example.logicalback.entity.Category;
+import com.example.logicalback.entity.Tag;
 import com.example.logicalback.entity.Task;
 import com.example.logicalback.entity.TaskStatus;
+import com.example.logicalback.entity.User;
 import com.example.logicalback.exception.ResourceNotFoundException;
-import com.example.logicalback.model.Category;
-import com.example.logicalback.model.Tag;
-import com.example.logicalback.model.User;
 import com.example.logicalback.repository.CategoryRepository;
+import com.example.logicalback.repository.TagRepository;
 import com.example.logicalback.repository.TaskRepository;
 import com.example.logicalback.repository.UserRepository;
 import com.example.logicalback.service.TaskService;
@@ -31,6 +32,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
 
     @Override
     @Transactional
@@ -52,7 +54,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = Task.builder()
                 .title(taskDTO.getTitle())
                 .description(taskDTO.getDescription())
-                .status(taskDTO.getStatus() != null ? taskDTO.getStatus() : Task.TaskStatus.PENDING)
+                .status(taskDTO.getStatus() != null ? taskDTO.getStatus() : TaskStatus.PENDING)
                 .user(user)
                 .category(category)
                 .priority(taskDTO.getPriority())
@@ -134,7 +136,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TaskDTO> getTasksByStatus(Task.TaskStatus status) {
+    public List<TaskDTO> getTasksByStatus(TaskStatus status) {
         log.debug("获取状态为 {} 的所有任务", status);
         return taskRepository.findByStatus(status).stream()
                 .map(TaskDTO::fromEntity)
@@ -167,7 +169,7 @@ public class TaskServiceImpl implements TaskService {
     @Transactional(readOnly = true)
     public List<TaskDTO> getTasksByTagId(Long tagId) {
         log.debug("获取标签 ID: {} 的所有任务", tagId);
-        if (!userRepository.existsById(tagId)) {
+        if (!tagRepository.existsById(tagId)) {
             throw new ResourceNotFoundException("标签不存在, ID: " + tagId);
         }
         
@@ -211,13 +213,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public TaskDTO updateTaskStatus(Long id, Task.TaskStatus status) {
+    public TaskDTO updateTaskStatus(Long id, TaskStatus status) {
         log.info("更新任务 ID: {} 的状态为 {}", id, status);
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("任务不存在, ID: " + id));
         
         task.setStatus(status);
-        if (status == Task.TaskStatus.COMPLETED) {
+        if (status == TaskStatus.COMPLETED) {
             task.setCompletedAt(LocalDateTime.now());
         } else {
             task.setCompletedAt(null);
@@ -243,7 +245,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
-    public Long countTasksByUserAndStatus(Long userId, Task.TaskStatus status) {
+    public Long countTasksByUserAndStatus(Long userId, TaskStatus status) {
         log.debug("统计用户 ID: {} 状态为 {} 的任务数量", userId, status);
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("用户不存在, ID: " + userId);
@@ -259,7 +261,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("任务不存在, ID: " + taskId));
                 
-        Tag tag = userRepository.findById(tagId)
+        Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new ResourceNotFoundException("标签不存在, ID: " + tagId));
                 
         task.getTags().add(tag);
@@ -274,7 +276,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("任务不存在, ID: " + taskId));
                 
-        Tag tag = userRepository.findById(tagId)
+        Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new ResourceNotFoundException("标签不存在, ID: " + tagId));
                 
         task.getTags().remove(tag);

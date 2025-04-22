@@ -1,6 +1,7 @@
 package com.example.logicalback.service.impl;
 
 import com.example.logicalback.dto.UserDTO;
+import com.example.logicalback.entity.Role;
 import com.example.logicalback.entity.User;
 import com.example.logicalback.exception.ResourceNotFoundException;
 import com.example.logicalback.repository.UserRepository;
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
                 .password("$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG") // 默认密码: password
                 .email(userDTO.getEmail())
                 .fullName(userDTO.getFullName())
-                .role(userDTO.getRole() != null ? userDTO.getRole() : User.UserRole.USER)
+                .role(userDTO.getRole() != null ? userDTO.getRole() : Role.USER)
                 .active(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -85,16 +86,16 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<UserDTO> getActiveUsers() {
         log.debug("获取所有活跃用户");
-        return userRepository.findAllActiveUsers().stream()
+        return userRepository.findByActiveTrue().stream()
                 .map(UserDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDTO> getUsersByRole(User.UserRole role) {
+    public List<UserDTO> getUsersByRole(Role role) {
         log.debug("获取角色为 {} 的所有用户", role);
-        return userRepository.findAllByRole(role).stream()
+        return userRepository.findByRole(role).stream()
                 .map(UserDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -149,7 +150,7 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("用户不存在, ID: " + userId);
         }
         
-        return userRepository.countUserTasks(userId);
+        return userRepository.countByUserIdAndTasksIsNotNull(userId);
     }
 
     @Override
@@ -212,7 +213,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDTO> findActiveUsers() {
-        return userRepository.findAllActiveUsers().stream()
+        return userRepository.findByActiveTrue().stream()
                 .map(user -> UserDTO.builder()
                         .id(user.getId())
                         .username(user.getUsername())

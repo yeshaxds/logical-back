@@ -1,5 +1,6 @@
 package com.example.logicalback.dto;
 
+import com.example.logicalback.entity.Task;
 import com.example.logicalback.entity.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,7 +42,7 @@ public class TaskDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
-    public static TaskDTO fromEntity(com.example.logicalback.model.Task task) {
+    public static TaskDTO fromEntity(Task task) {
         return TaskDTO.builder()
                 .id(task.getId())
                 .title(task.getTitle())
@@ -53,7 +54,11 @@ public class TaskDTO {
                 .categoryName(task.getCategory() != null ? task.getCategory().getName() : null)
                 .userId(task.getUser() != null ? task.getUser().getId() : null)
                 .username(task.getUser() != null ? task.getUser().getUsername() : null)
-                .tags(task.getTags().stream().map(TagDTO::fromEntity).collect(Collectors.toList()))
+                .tags(task.getTags().stream().map(tag -> TagDTO.builder()
+                        .id(tag.getId())
+                        .name(tag.getName())
+                        .color(tag.getColor())
+                        .build()).collect(Collectors.toList()))
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .build();

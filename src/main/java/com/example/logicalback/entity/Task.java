@@ -34,6 +34,8 @@ public class Task {
     private Integer priority;
 
     private LocalDateTime dueDate;
+    
+    private LocalDateTime completedAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -69,5 +71,8 @@ public class Task {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        if (status == TaskStatus.COMPLETED && completedAt == null) {
+            completedAt = LocalDateTime.now();
+        }
     }
 } 

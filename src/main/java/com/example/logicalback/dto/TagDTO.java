@@ -1,6 +1,6 @@
 package com.example.logicalback.dto;
 
-import com.example.logicalback.model.Tag;
+import com.example.logicalback.entity.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

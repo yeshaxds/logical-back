@@ -1,7 +1,7 @@
 package com.example.logicalback.controller;
 
 import com.example.logicalback.dto.UserDTO;
-import com.example.logicalback.model.User;
+import com.example.logicalback.entity.Role;
 import com.example.logicalback.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @GetMapping("/role/{role}")
-    public ResponseEntity<List<UserDTO>> getUsersByRole(@PathVariable User.UserRole role) {
+    public ResponseEntity<List<UserDTO>> getUsersByRole(@PathVariable Role role) {
         log.info("REST请求 - 获取角色为 {} 的所有用户", role);
         return ResponseEntity.ok(userService.getUsersByRole(role));
     }

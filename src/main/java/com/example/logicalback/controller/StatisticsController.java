@@ -2,7 +2,7 @@ package com.example.logicalback.controller;
 
 import com.example.logicalback.dto.CategoryDTO;
 import com.example.logicalback.dto.TagDTO;
-import com.example.logicalback.model.Task;
+import com.example.logicalback.entity.TaskStatus;
 import com.example.logicalback.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class StatisticsController {
     }
 
     @GetMapping("/task-status/user/{userId}")
-    public ResponseEntity<Map<Task.TaskStatus, Long>> getUserTaskStatusDistribution(@PathVariable Long userId) {
+    public ResponseEntity<Map<TaskStatus, Long>> getUserTaskStatusDistribution(@PathVariable Long userId) {
         log.info("REST请求 - 获取用户 ID: {} 的任务状态分布", userId);
         return ResponseEntity.ok(statisticsService.getUserTaskStatusDistribution(userId));
     }
